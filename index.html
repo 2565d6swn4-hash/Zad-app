@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق زاد - رفيقك اليومي</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --border: #334155;
+            --warning: #f59e0b;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 520px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+        header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .card h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        /* العداد */
+        .counter-box {
+            text-align: center;
+        }
+        .counter-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 10px 0;
+        }
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            margin-top: 8px;
+        }
+
+        /* شبكة الأجزاء */
+        .juz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .juz-item {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 5px;
+            text-align: center;
+            font-size: 0.85rem;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+        .juz-item.completed {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+        .juz-item.in-progress {
+            background: var(--warning);
+            color: #0f172a;
+            font-weight: bold;
+            border-color: var(--warning);
+        }
+        .progress-bar-container {
+            background: var(--border);
+            border-radius: 10px;
+            height: 10px;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-bar {
+            background: var(--accent);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>تطبيق زاد</h1>
+        <p>رفيقك اليومي للعبادات والأذكار وحفظ القرآن</p>
+    </header>
+
+    <!-- بطاقة متابعة حفظ القرآن -->
+    <div class="card">
+        <h3>
+            <span>سجل حفظ القرآن (30 جزء)</span>
+            <span id="progress-text" style="font-size: 0.85rem; color: var(--accent);">0%</span>
+        </h3>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">
+            اضغط مرة: <b style="color: var(--warning);">جارٍ الحفظ</b> | اضغط مرتين: <b style="color: var(--accent);">تم الحفظ</b> | اضغط ثالثة: إعادة ضبط
+        </p>
+        <div class="juz-grid" id="juz-container"></div>
+    </div>
+
+    <!-- بطاقة المسبحة / العداد -->
+    <div class="card counter-box">
+        <h3>السبحة الإلكترونية</h3>
+        <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">سبحان الله وبحمده، سبحان الله العظيم</p>
+        <div class="counter-display" id="count">0</div>
+        <button class="btn" onclick="incrementCounter()">تسبيح (+1)</button>
+        <button class="btn btn-secondary" onclick="resetCounter()">تصفير</button>
+    </div>
+</div>
+
+<script>
+    // 1. إدارة السبحة الإلكترونية
+    let counter = localStorage.getItem('zad_counter') ? parseInt(localStorage.getItem('zad_counter')) : 0;
+    const countDisplay = document.getElementById('count');
+    countDisplay.textContent = counter;
+
+    function incrementCounter() {
+        counter++;
+        countDisplay.textContent = counter;
+        localStorage.setItem('zad_counter', counter);
+    }
+
+    function resetCounter() {
+        counter = 0;
+        countDisplay.textContent = counter;
+        localStorage.setItem('zad_counter', counter);
+    }
+
+    // 2. إدارة حفظ الأجزاء (30 جزء)
+    // الحالات: 0 = لم يبدأ، 1 = جارٍ الحفظ، 2 = تم الحفظ
+    let juzData = JSON.parse(localStorage.getItem('zad_quran_juz')) || Array(30).fill(0);
+
+    const juzContainer = document.getElementById('juz-container');
+
+    function renderJuz() {
+        juzContainer.innerHTML = '';
+        let completedCount = 0;
+
+        juzData.forEach((status, index) => {
+            const juzBox = document.createElement('div');
+            juzBox.className = 'juz-item';
+            
+            if (status === 1) {
+                juzBox.classList.add('in-progress');
+            } else if (status === 2) {
+                juzBox.classList.add('completed');
+                completedCount++;
+            }
+
+            juzBox.textContent = `الجزء ${index + 1}`;
+            juzBox.onclick = () => toggleJuzStatus(index);
+            juzContainer.appendChild(juzBox);
+        });
+
+        // تحديث شريط التقدم
+        const percentage = Math.round((completedCount / 30) * 100);
+        document.getElementById('progress-bar').style.width = percentage + '%';
+        document.getElementById('progress-text').textContent = percentage + '% تم حفظه';
+    }
+
+    function toggleJuzStatus(index) {
+        juzData[index] = (juzData[index] + 1) % 3;
+        localStorage.setItem('zad_quran_juz', JSON.stringify(juzData));
+        renderJuz();
+    }
+
+    // التشغيل عند فتح الصفحة
+    renderJuz();
+</script>
+
+</body>
+</html>
